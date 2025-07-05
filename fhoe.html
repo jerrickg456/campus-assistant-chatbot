@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini API Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        input, button { padding: 10px; margin: 10px; }
+        #response { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h2>Chat with Gemini</h2>
+    <input type="text" id="userInput" placeholder="Ask something...">
+    <button onclick="sendMessage()">Send</button>
+    <div id="response"></div>
+
+    <script>
+        async function sendMessage() {
+            const apiKey = "AIzaSyCfG0g6hOUndFicxfonWt3zDh7txnN_-HI";
+            const userText = document.getElementById("userInput").value;
+            const responseDiv = document.getElementById("response");
+            
+            if (!userText) {
+                alert("Please enter a message");
+                return;
+            }
+            
+            responseDiv.innerHTML = "<em>Loading...</em>";
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ parts: [{ text: userText }] }] })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const reply = data.candidates[0]?.content?.parts[0]?.text || "No response";
+                responseDiv.innerHTML = `<strong>Gemini:</strong> ${reply}`;
+            } else {
+                responseDiv.innerHTML = `<strong>Error:</strong> ${response.status} - ${await response.text()}`;
+            }
+        }
+    </script>
+</body>
+</html>

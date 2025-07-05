@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Booking - CampusAssist</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    </head>
+    <body>
+    <style>
+        /* Additional styles for booking page */
+        .booking-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .booking-filters {
+            flex: 1;
+            min-width: 250px;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .booking-results {
+            flex: 3;
+            min-width: 300px;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-group {
+            margin-bottom: 20px;
+        }
+        
+        .filter-group h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .date-time-picker {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .time-slot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .room-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            transition: all 0.3s ease;
+        }
+        
+        .room-card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .room-image {
+            width: 120px;
+            height: 90px;
+            border-radius: 5px;
+            margin-right: 15px;
+            background-color: #f0f0f0;
+            overflow: hidden;
+        }
+        
+        .room-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .room-details {
+            flex: 1;
+        }
+        
+        .room-name {
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .room-capacity, .room-features {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .room-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .feature-tag {
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 12px;
+        }
+        
+        .room-availability {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .time-block {
+            background-color: #e8f5e9;
+            border-radius: 4px;
+            padding: 5px 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .time-block.booked {
+            background-color: #ffebee;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .time-block:hover:not(.booked) {
+            background-color: #c8e6c9;
+        }
+        
+        .room-actions {
+            width: 120px;
+            text-align: right;
+        }
+        
+        .view-details-btn {
+            background-color: transparent;
+            border: 1px solid #3498db;
+            color: #3498db;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .view-details-btn:hover {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .booking-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+        
+        .book-now-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .book-now-btn:hover {
+            background-color: #388E3C;
+        }
+        
+        /* Booking Modal */
+        .booking-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 25px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .booking-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .selected-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .selected-slot-tag {
+            background-color: #e8f5e9;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .remove-slot {
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .cancel-btn {
+            background-color: #f0f0f0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .confirm-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .calendar-view {
+            margin-top: 20px;
+        }
+        
+        .week-navigator {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .week-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .week-control-btn {
+            background-color: #f0f0f0;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: 100px repeat(7, 1fr);
+            gap: 1px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .calendar-header {
+            background-color: #f5f5f5;
+            font-weight: 600;
+            text-align: center;
+            padding: 10px 5px;
+        }
+        
+        .time-label {
+            background-color: #f5f5f5;
+            padding: 8px 5px;
+            font-size: 14px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .calendar-cell {
+            padding: 8px 5px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            background-color: #fff;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .calendar-cell:hover:not(.booked):not(.time-label) {
+            background-color: #e8f5e9;
+        }
+        
+        .calendar-cell.booked {
+            background-color: #ffebee;
+            cursor: not-allowed;
+        }
+        
+        .calendar-cell.selected {
+            background-color: #c8e6c9;
+        }
+        
+        /* Success Message */
+        .success-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .success-icon {
+            font-size: 48px;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        
+        .confirmation-details {
+            margin-top: 20px;
+            width: 100%;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+        }
+        /* Base Styles and Variables */
+:root {
+    --primary-color: #4a6baf;
+    --secondary-color: #3f37c9;
+    --accent-color: #4cc9f0;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f44336;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --light-gray: #f5f5f5;
+    --medium-gray: #e0e0e0;
+    --dark-gray: #9e9e9e;
+    --white: #ffffff;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --radius: 8px;
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul {
+    list-style-type: none;
+}
+
+/* Navbar Styles */
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    height: 70px;
+    background-color: var(--white);
+    box-shadow: var(--shadow);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+.logo h1 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 0.5rem 0.8rem;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.nav-links a:hover, .nav-links a.active {
+    color: var(--primary-color);
+    background-color: rgba(74, 107, 175, 0.1);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.profile-image img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background-color: transparent;
+    color: var(--text-primary);
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: var(--white);
+    min-width: 160px;
+    box-shadow: var(--shadow);
+    border-radius: var(--radius);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: var(--text-secondary);
+    padding: 12px 16px;
+    display: block;
+    transition: var(--transition);
+}
+
+.dropdown-content a:hover {
+    background-color: var(--light-gray);
+    color: var(--primary-color);
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Container Layout */
+.container {
+    display: flex;
+    margin-top: 70px;
+    min-height: calc(100vh - 70px);
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 250px;
+    background-color: var(--white);
+    padding: 1.5rem 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    height: calc(100vh - 70px);
+    position: fixed;
+    overflow-y: auto;
+}
+
+.user-welcome {
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--medium-gray);
+}
+
+.user-welcome h3 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-menu {
+    margin-top: 1.5rem;
+}
+
+.sidebar-menu li {
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    color: var(--text-secondary);
+    transition: var(--transition);
+}
+
+.sidebar-menu a:hover {
+    background-color: rgba(74, 107, 175, 0.1);
+    color: var(--primary-color);
+    border-left: 4px solid var(--primary-color);
+}
+
+.sidebar-menu a i {
+    margin-right: 0.8rem;
+    font-size: 1.2rem;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 1.5rem;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h2 {
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+#search-bar {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--radius);
+    width: 250px;
+}
+
+.filter-section {
+    margin-bottom: 20px;
+}
+
+.filter-section label {
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+.filter-section select {
+    padding: 8px;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--radius);
+    background-color: var(--white);
+}
+
+/* Updated Resources Styles to match screenshot */
+.resources-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+}
+
+.resource-card {
+    display: flex;
+    flex-direction: column;
+    padding: 15px 0;
+    border-top: 1px solid var(--medium-gray);
+    border-bottom: 1px solid var(--medium-gray);
+    transition: var(--transition);
+    margin-bottom: -1px; /* Prevent double borders */
+}
+
+.resource-icon {
+    margin-bottom: 10px;
+}
+
+.resource-icon i {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+}
+
+.resource-info {
+    margin-bottom: 15px;
+}
+
+.resource-info h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text-primary);
+}
+
+.resource-info p {
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+.status {
+    display: inline-block;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.status.available {
+    color: var(--success-color);
+}
+
+.status.reserved {
+    color: var(--warning-color);
+}
+
+.book-btn {
+    width: fit-content;
+    padding: 8px 15px;
+    background-color: var(--white);
+    color: var(--text-primary);
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.book-btn:hover:not([disabled]) {
+    background-color: var(--primary-color);
+    color: var(--white);
+    border-color: var(--primary-color);
+}
+
+.book-btn[disabled] {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Fieldset styling */
+fieldset {
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Add these new styles for the simplified layout */
+.resources-container h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+}
+
+.filter-type {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filter-type label {
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+.filter-type select {
+    padding: 8px;
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+}
+
+/* Style for the resource types icons */
+.resource-card[data-type="study-room"] .resource-icon i:before {
+    content: "\f51c"; /* chalkboard icon */
+}
+
+.resource-card[data-type="equipment"] .resource-icon i:before {
+    content: "\f109"; /* laptop icon */
+}
+
+.resource-card[data-type="study-room"]:nth-child(2) .resource-icon i:before {
+    content: "\f51b"; /* chalkboard-teacher icon */
+}
+
+.resource-card[data-type="equipment"]:nth-child(2) .resource-icon i:before {
+    content: "\f03d"; /* video icon */
+}
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <h1>CampusAssist</h1>
+        </div>
+        <ul class="nav-links">
+            <li><a href="tech.html">Dashboard</a></li>
+            <li><a href="resource.html">Resources</a></li>
+            <li><a href="booking.html" class="active">Bookings</a></li>
+            <li><a href="servicerequest.html">Service Requests</a></li>
+            <li><a href="feedback.html">Feedback</a></li>
+        </ul>
+        <div class="user-info">
+            <div class="profile-image">
+                <img src="placeholder-profile.jpg" alt="Profile">
+            </div>
+            <div class="dropdown">
+                <button class="dropbtn">John Doe <i class="fas fa-caret-down"></i></button>
+                <div class="dropdown-content">
+                    <a href="#">Profile</a>
+                    <a href="#">Settings</a>
+                    <a href="#">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="user-welcome">
+                <h3>Welcome, John!</h3>
+                <p>Student ID: ST12345</p>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="tech.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="resource.html"><i class="fas fa-calendar-alt"></i> Resources</a></li>
+                <li><a href="booking.html"><i class="fas fa-clipboard-list"></i> My Bookings</a></li>
+                <li><a href="servicerequest.html"><i class="fas fa-cog"></i> My Requests</a></li>
+                <li><a href="feedback.html"><i class="fas fa-question-circle"></i> Help</a></li>
+            </ul>
+        </div>
+
+        <!-- Booking Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <h2>Room Booking</h2>
+                <div class="date-time">
+                    <p id="current-date">March 6, 2025</p>
+                </div>
+            </div>
+
+            <!-- Booking Tabs -->
+            <div class="booking-tabs">
+                <button class="tab-btn active" data-tab="new-booking">New Booking</button>
+                <button class="tab-btn" data-tab="my-bookings">My Bookings</button>
+                <button class="tab-btn" data-tab="booking-history">Booking History</button>
+            </div>
+
+            <!-- New Booking Tab Content -->
+            <div class="tab-content" id="new-booking">
+                <div class="booking-container">
+                    <!-- Booking Filters -->
+                    <div class="booking-filters">
+                        <h3>Find Available Rooms</h3>
+                        
+                        <div class="filter-group">
+                            <h4>Room Type</h4>
+                            <div>
+                                <label><input type="checkbox" name="room-type" value="classroom" checked> Classrooms</label>
+                            </div>
+                            <div>
+                                <label><input type="checkbox" name="room-type" value="lab" checked> Lab Rooms</label>
+                            </div>
+                            <div>
+                                <label><input type="checkbox" name="room-type" value="conference"> Conference Rooms</label>
+                            </div>
+                            <div>
+                                <label><input type="checkbox" name="room-type" value="study"> Study Rooms</label>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <h4>Building</h4>
+                            <select id="building-select">
+                                <option value="all">All Buildings</option>
+                                <option value="science">Science Building</option>
+                                <option value="engineering">Engineering Building</option>
+                                <option value="arts">Arts Building</option>
+                                <option value="library">Library</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <h4>Capacity</h4>
+                            <select id="capacity-select">
+                                <option value="any">Any Capacity</option>
+                                <option value="1-10">1-10 People</option>
+                                <option value="11-30">11-30 People</option>
+                                <option value="31-60">31-60 People</option>
+                                <option value="60+">60+ People</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <h4>Date</h4>
+                            <input type="date" id="booking-date" min="2025-03-06" value="2025-03-06">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <h4>Time Slots</h4>
+                            <div class="time-slot">
+                                <label>Start Time:</label>
+                                <select id="start-time">
+                                    <option value="08:00">8:00 AM</option>
+                                    <option value="09:00">9:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">1:00 PM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                    <option value="15:00">3:00 PM</option>
+                                    <option value="16:00">4:00 PM</option>
+                                    <option value="17:00">5:00 PM</option>
+                                    <option value="18:00">6:00 PM</option>
+                                </select>
+                            </div>
+                            <div class="time-slot">
+                                <label>End Time:</label>
+                                <select id="end-time">
+                                    <option value="09:00">9:00 AM</option>
+                                    <option value="10:00">10:00 AM</option>
+                                    <option value="11:00">11:00 AM</option>
+                                    <option value="12:00">12:00 PM</option>
+                                    <option value="13:00">1:00 PM</option>
+                                    <option value="14:00">2:00 PM</option>
+                                    <option value="15:00">3:00 PM</option>
+                                    <option value="16:00">4:00 PM</option>
+                                    <option value="17:00">5:00 PM</option>
+                                    <option value="18:00">6:00 PM</option>
+                                    <option value="19:00" selected>7:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <h4>Features</h4>
+                            <div>
+                                <label><input type="checkbox" name="features" value="projector"> Projector</label>
+                            </div>
+                            <div>
+                                <label><input type="checkbox" name="features" value="whiteboard"> Whiteboard</label>
+                            </div>
+                            <div>
+                                <label><input type="checkbox" name="features" value="computers"> Computers</label>
+                            </div>
+                            <div>
+                                <label><input type="checkbox" name="features" value="videoconf"> Video Conferencing</label>
+                            </div>
+                        </div>
+                        
+                        <button id="search-rooms-btn" class="book-now-btn">Search Rooms</button>
+                    </div>
+                    
+                    <!-- Booking Results -->
+                    <div class="booking-results">
+                        <div class="section-header">
+                            <h3>Available Rooms</h3>
+                            <div class="view-toggle">
+                                <button class="view-btn active" data-view="list"><i class="fas fa-list"></i></button>
+                                <button class="view-btn" data-view="calendar"><i class="fas fa-calendar-alt"></i></button>
+                            </div>
+                        </div>
+                        
+                        <!-- List View -->
+                        <div class="list-view">
+                            <!-- Room Card 1 -->
+                            <div class="room-card">
+                                <div class="room-image">
+                                    <img src="/api/placeholder/120/90" alt="Classroom 101">
+                                </div>
+                                <div class="room-details">
+                                    <div class="room-name">Classroom 101</div>
+                                    <div class="room-capacity"><i class="fas fa-users"></i> Capacity: 40 people</div>
+                                    <div class="room-features">
+                                        <span class="feature-tag"><i class="fas fa-tv"></i> Projector</span>
+                                        <span class="feature-tag"><i class="fas fa-chalkboard"></i> Whiteboard</span>
+                                        <span class="feature-tag"><i class="fas fa-volume-up"></i> Audio System</span>
+                                    </div>
+                                    <div class="room-availability">
+                                        <div class="time-block">8:00 - 9:00</div>
+                                        <div class="time-block">9:00 - 10:00</div>
+                                        <div class="time-block booked">10:00 - 11:00</div>
+                                        <div class="time-block booked">11:00 - 12:00</div>
+                                        <div class="time-block">12:00 - 1:00</div>
+                                        <div class="time-block">1:00 - 2:00</div>
+                                        <div class="time-block">2:00 - 3:00</div>
+                                    </div>
+                                </div>
+                                <div class="room-actions">
+                                    <button class="view-details-btn">Details</button>
+                                    <button class="book-now-btn" style="margin-top: 10px;" onclick="openBookingModal('Classroom 101')">Book Now</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Room Card 2 -->
+                            <div class="room-card">
+                                <div class="room-image">
+                                    <img src="/api/placeholder/120/90" alt="Computer Lab 3">
+                                </div>
+                                <div class="room-details">
+                                    <div class="room-name">Computer Lab 3</div>
+                                    <div class="room-capacity"><i class="fas fa-users"></i> Capacity: 25 people</div>
+                                    <div class="room-features">
+                                        <span class="feature-tag"><i class="fas fa-laptop"></i> Computers</span>
+                                        <span class="feature-tag"><i class="fas fa-tv"></i> Projector</span>
+                                        <span class="feature-tag"><i class="fas fa-network-wired"></i> Special Software</span>
+                                    </div>
+                                    <div class="room-availability">
+                                        <div class="time-block booked">8:00 - 9:00</div>
+                                        <div class="time-block booked">9:00 - 10:00</div>
+                                        <div class="time-block booked">10:00 - 11:00</div>
+                                        <div class="time-block">11:00 - 12:00</div>
+                                        <div class="time-block">12:00 - 1:00</div>
+                                        <div class="time-block">1:00 - 2:00</div>
+                                        <div class="time-block">2:00 - 3:00</div>
+                                    </div>
+                                </div>
+                                <div class="room-actions">
+                                    <button class="view-details-btn">Details</button>
+                                    <button class="book-now-btn" style="margin-top: 10px;" onclick="openBookingModal('Computer Lab 3')">Book Now</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Room Card 3 -->
+                            <div class="room-card">
+                                <div class="room-image">
+                                    <img src="/api/placeholder/120/90" alt="Science Lab 201">
+                                </div>
+                                <div class="room-details">
+                                    <div class="room-name">Science Lab 201</div>
+                                    <div class="room-capacity"><i class="fas fa-users"></i> Capacity: 30 people</div>
+                                    <div class="room-features">
+                                        <span class="feature-tag"><i class="fas fa-flask"></i> Lab Equipment</span>
+                                        <span class="feature-tag"><i class="fas fa-tv"></i> Projector</span>
+                                        <span class="feature-tag"><i class="fas fa-sink"></i> Sink Stations</span>
+                                    </div>
+                                    <div class="room-availability">
+                                        <div class="time-block">8:00 - 9:00</div>
+                                        <div class="time-block">9:00 - 10:00</div>
+                                        <div class="time-block">10:00 - 11:00</div>
+                                        <div class="time-block">11:00 - 12:00</div>
+                                        <div class="time-block booked">12:00 - 1:00</div>
+                                        <div class="time-block booked">1:00 - 2:00</div>
+                                        <div class="time-block">2:00 - 3:00</div>
+                                    </div>
+                                </div>
+                                <div class="room-actions">
+                                    <button class="view-details-btn">Details</button>
+                                    <button class="book-now-btn" style="margin-top: 10px;" onclick="openBookingModal('Science Lab 201')">Book Now</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Calendar View -->
+                        <div class="calendar-view" style="display: none;">
+                            <div class="week-navigator">
+                                <h4>Week of March 6 - March 12, 2025</h4>
+                                <div class="week-controls">
+                                    <button class="week-control-btn"><i class="fas fa-chevron-left"></i> Previous</button>
+                                    <button class="week-control-btn">Today</button>
+                                    <button class="week-control-btn">Next <i class="fas fa-chevron-right"></i></button>
+                                </div>
+                            </div>
+                            
+                            <div class="calendar-grid">
+                                <!-- Headers -->
+                                <div class="calendar-header">Time</div>
+                                <div class="calendar-header">Mon (3/6)</div>
+                                <div class="calendar-header">Tue (3/7)</div>
+                                <div class="calendar-header">Wed (3/8)</div>
+                                <div class="calendar-header">Thu (3/9)</div>
+                                <div class="calendar-header">Fri (3/10)</div>
+                                <div class="calendar-header">Sat (3/11)</div>
+                                <div class="calendar-header">Sun (3/12)</div>
+                                
+                                <!-- 8:00 AM Row -->
+                                <div class="time-label">8:00 AM</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                
+                                <!-- 9:00 AM Row -->
+                                <div class="time-label">9:00 AM</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                
+                                <!-- 10:00 AM Row -->
+                                <div class="time-label">10:00 AM</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                
+                                <!-- 11:00 AM Row -->
+                                <div class="time-label">11:00 AM</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                
+                                <!-- 12:00 PM Row -->
+                                <div class="time-label">12:00 PM</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                
+                                <!-- 1:00 PM Row -->
+                                <div class="time-label">1:00 PM</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                
+                                <!-- 2:00 PM Row -->
+                                <div class="time-label">2:00 PM</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell booked">Booked</div>
+                                <div class="calendar-cell">Available</div>
+                                <div class="calendar-cell">Available</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        
+    <script src="helo.js"></script>
+            
+            <!-- My Bookings Tab Content -->
+            <div class="tab-content" id="
+        </body>

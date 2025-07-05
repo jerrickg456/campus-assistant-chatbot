@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini API Connection</title>
+</head>
+<body>
+    <h2>Ask Gemini</h2>
+    <input type="text" id="prompt" placeholder="Enter your query">
+    <button onclick="askGemini()">Submit</button>
+    <p><strong>Response:</strong> <span id="response"></span></p>
+
+    <script>
+        async function askGemini() {
+            const apiKey = "AIzaSyCfG0g6hOUndFicxfonWt3zDh7txnN_-HI"; // Replace with your Gemini API key
+            const prompt = document.getElementById("prompt").value;
+            const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateText?key=" + apiKey;
+            
+            const requestBody = {
+                prompt: { text: prompt },
+            };
+            
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(requestBody),
+                });
+                const data = await response.json();
+                document.getElementById("response").innerText = data.candidates[0]?.output || "No response";
+            } catch (error) {
+                document.getElementById("response").innerText = "Error: " + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
